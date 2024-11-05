@@ -1,0 +1,57 @@
+import os
+from itertools import combinations
+
+configfile: "config.yaml"
+
+input_sets = config.keys()
+As= [config[k][0]["Aproteins"] for k in config]
+Bs= [config[k][1]["Bproteins"] for k in config]
+SAMPLES = list(set([*As,*Bs]))
+print(SAMPLES)
+As= [os.path.basename(A) for A in As]
+Bs= [os.path.basename(B) for B in Bs]
+
+print(input_sets)
+rule all:
+    input:
+        expand("results/mmseqs_easy_rbh/{set}_comparison.txt", set=input_sets),
+        expand("results/inparanoid/SQLtable.{pair}",pair=list(map(lambda pair: "-".join(pair),list(combinations(sorted(list(set([*As,*Bs]))), 2)))))
+        expand("results/inparanoid/SQLtable.{pair}.reshaped.csv",pair=list(map(lambda pair: "-".join(pair),list(combinations(sorted(list(set([*As,*Bs]))), 2)))))
+
+rule mmseqs_easy_rbh:
+    input:
+        Aproteins=lambda wildcards: config[wildcards.set][0]["Aproteins"],
+        Bproteins=lambda wildcards: config[wildcards.set][1]["Bproteins"]
+    output:
+        "results/mmseqs_easy_rbh/{set}_comparison.txt"
+    container:
+        "https://depot.galaxyproject.org/singularity/mmseqs2:15.6f452--pl5321h6a68c12_3"
+    shell:
+        """
+        mmseqs easy-rbh {input.Aproteins} {input.Bproteins} {output} tmp
+        """
+
+rule inparanoid:
+    input:
+        SAMPLES
+    output:
+        expand("results/inparanoid/SQLtable.{pair}",pair=list(map(lambda pair: "-".join(pair),list(combinations(sorted(list(set([*As,*Bs]))), 2)))))
+    container:
+        "docker://sonnhammer/inparanoid:singularity"
+    shell:
+        """
+        bash /runSingularity.sh
+        """
+
+rule inparanoid_postprocessing:
+    input:
+        "results/inparanoid/SQLtable.{pair}"
+    output:
+        "results/inparanoid/SQLtable.{pair}.reshaped.csv"
+    shell:
+        """
+        python
+        """
+
+
+

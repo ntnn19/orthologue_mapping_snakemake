@@ -1,0 +1,6 @@
+set1:
+  - Aproteins: "input/mosquito.fasta"
+  - Bproteins: "input/fly.fasta"
+set2:
+  - Aproteins: "input/mosquito.fasta"
+  - Bproteins: "input/human.fasta"
