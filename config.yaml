@@ -4,3 +4,5 @@ set1:
 set2:
   - Aproteins: "input/mosquito.fasta"
   - Bproteins: "input/human.fasta"
+mmseqs:
+  evalue: 10

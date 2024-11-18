@@ -1,11 +1,11 @@
 import os
 from itertools import combinations
-
 configfile: "config.yaml"
 
 input_sets = config.keys()
-As= [config[k][0]["Aproteins"] for k in config]
-Bs= [config[k][1]["Bproteins"] for k in config]
+print(input_sets)
+As= [config[k][0]["Aproteins"] for k in config if k not in ["mmseqs","inparanoid"]]
+Bs= [config[k][1]["Bproteins"] for k in config if k not in ["mmseqs","inparanoid"]]
 SAMPLES = list(set([*As,*Bs]))
 print(SAMPLES)
 As= [os.path.basename(A) for A in As]
@@ -14,28 +14,31 @@ Bs= [os.path.basename(B) for B in Bs]
 print(input_sets)
 rule all:
     input:
-        expand("results/mmseqs_easy_rbh/{set}_comparison.txt", set=input_sets),
-        expand("results/inparanoid/SQLtable.{pair}",pair=list(map(lambda pair: "-".join(pair),list(combinations(sorted(list(set([*As,*Bs]))), 2)))))
-        expand("results/inparanoid/SQLtable.{pair}.reshaped.csv",pair=list(map(lambda pair: "-".join(pair),list(combinations(sorted(list(set([*As,*Bs]))), 2)))))
+        expand("results/mmseqs_easy_rbh/{set}_comparison.orthotype.txt", set=input_sets),
+        expand("results/inparanoid/SQLtable.{pair}.orthotype.csv",pair=list(map(lambda pair: "-".join(pair),list(combinations(sorted(list(set([*As,*Bs]))), 2)))))
 
 rule mmseqs_easy_rbh:
     input:
         Aproteins=lambda wildcards: config[wildcards.set][0]["Aproteins"],
         Bproteins=lambda wildcards: config[wildcards.set][1]["Bproteins"]
+    params:
+        e = config["mmseqs"]["evalue"]
     output:
         "results/mmseqs_easy_rbh/{set}_comparison.txt"
     container:
         "https://depot.galaxyproject.org/singularity/mmseqs2:15.6f452--pl5321h6a68c12_3"
     shell:
         """
-        mmseqs easy-rbh {input.Aproteins} {input.Bproteins} {output} tmp
+        mmseqs easy-rbh {input.Aproteins} {input.Bproteins} {output} tmp -e {params.e}  --format-output query,target,fident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,qcov,tcov
+        #mmseqs easy-rbh {input.Aproteins} {input.Bproteins} {output} tmp -e {params.e} --format-mode 4
+        
         """
 
 rule inparanoid:
     input:
         SAMPLES
     output:
-        expand("results/inparanoid/SQLtable.{pair}",pair=list(map(lambda pair: "-".join(pair),list(combinations(sorted(list(set([*As,*Bs]))), 2)))))
+        expand("results/inparanoid/SQLtable.{pair}.fasta",pair=list(map(lambda pair: "-".join(pair),list(combinations(sorted(list(set([*As,*Bs]))), 2)))))
     container:
         "docker://sonnhammer/inparanoid:singularity"
     shell:
@@ -45,12 +48,22 @@ rule inparanoid:
 
 rule inparanoid_postprocessing:
     input:
-        "results/inparanoid/SQLtable.{pair}"
+        "results/inparanoid/SQLtable.{pair}.fasta"
     output:
-        "results/inparanoid/SQLtable.{pair}.reshaped.csv"
+        "results/inparanoid/SQLtable.{pair}.fasta.orthotype.csv"
     shell:
         """
-        python
+        python workflow/scripts/postprocess_inparanoid_output.py {input} {output}
+        """
+
+rule mmseqs_postprocessing:
+    input:
+        "results/mmseqs_easy_rbh/{set}_comparison.txt"
+    output:
+        "results/mmseqs_easy_rbh/{set}_comparison.orthotype.txt"
+    shell:
+        """
+        python workflow/scripts/postprocess_mmseqs_output.py {input} {output}
         """
 
 
