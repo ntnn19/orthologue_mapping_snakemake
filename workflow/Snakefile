@@ -53,8 +53,11 @@ rule mmseqs_postprocessing:
         """
 
 rule inparanoid:
+    input:
+        SAMPLES
     output:
-        expand("results/inparanoid/{set}/SQLtable.{pair}",zip,pair=PAIRS,set=SETS)
+        "results/inparanoid/{set}/SQLtable.{pair}.tsv"
+#        expand("results/inparanoid/{set}/SQLtable.{pair}",zip,pair=PAIRS,set=SETS)
     container:
         "docker://sonnhammer/inparanoid:singularity"
     shell:
@@ -64,7 +67,7 @@ rule inparanoid:
 
 rule inparanoid_postprocessing:
     input:
-        "results/inparanoid/{set}/SQLtable.{pair}"
+        "results/inparanoid/{set}/SQLtable.{pair}.tsv"
     output:
         "results/inparanoid/{set}/SQLtable.{pair}.orthotype.csv"
     shell:
