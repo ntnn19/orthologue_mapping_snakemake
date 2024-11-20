@@ -14,14 +14,18 @@ print(As,Bs)
 PAIRS = list(map(lambda pair: "-".join(pair),list(zip(As_basenames,Bs_basenames))))
 Q= [os.path.splitext(os.path.basename(q))[0] for q in config['samples']['mmseqs']['queries']]
 T= [os.path.splitext(os.path.basename(t))[0] for t in config['samples']['mmseqs']['targets']]
+SETS=[k for k in config['samples']['inparanoid']]
+print(PAIRS,SETS)
 
+print(Q,T)
 #['set1', 'set1', 'set2', 'set2', 'set3', 'set3'] ['mosquito', 'fly', 'human', 'mosquito', 'mouse', 'mosquito']
+#['Reference_proteome_Ae_aegypti_LVP_AGWG_UP000008820_7159'] ['Reference_proteome_Mouse_UP000000589_10090', 'Reference_proteome_Human_uniprot_9606_reviewed_canonical_isoforms_191008', 'Reference_proteome_D_melanogaster_UP000000803_7227']
 
 #exit()
 rule all:
     input:
-        expand("results/mmseqs_easy_rbh/{query}_{target}.orthotype.txt", query=Q,target=T),
-        expand("results/inparanoid/SQLtable.{pair}.orthotype.csv",pair=PAIRS)
+        expand("results/mmseqs_easy_rbh/{query}-{target}.orthotype.txt", query=Q,target=T),
+        expand("results/inparanoid/{set}/SQLtable.{pair}.orthotype.csv",zip,pair=PAIRS,set=SETS)
 
 rule mmseqs_easy_rbh:
     input:
@@ -30,7 +34,7 @@ rule mmseqs_easy_rbh:
     params:
         e = config["mmseqs"]["evalue"]
     output:
-        "results/mmseqs_easy_rbh/{query}_{target}.txt"
+        "results/mmseqs_easy_rbh/{query}-{target}.txt"
     container:
         "https://depot.galaxyproject.org/singularity/mmseqs2:15.6f452--pl5321h6a68c12_3"
     shell:
@@ -40,9 +44,9 @@ rule mmseqs_easy_rbh:
 
 rule mmseqs_postprocessing:
     input:
-        "results/mmseqs_easy_rbh/{query}_{target}.txt"
+        "results/mmseqs_easy_rbh/{query}-{target}.txt"
     output:
-        "results/mmseqs_easy_rbh/{query}_{target}.orthotype.txt"
+        "results/mmseqs_easy_rbh/{query}-{target}.orthotype.txt"
     shell:
         """
         python workflow/scripts/postprocess_mmseqs_output.py {input} {output}
@@ -50,7 +54,7 @@ rule mmseqs_postprocessing:
 
 rule inparanoid:
     output:
-        expand("results/inparanoid/SQLtable.{pair}",pair=PAIRS)
+        expand("results/inparanoid/{set}/SQLtable.{pair}",zip,pair=PAIRS,set=SETS)
     container:
         "docker://sonnhammer/inparanoid:singularity"
     shell:
@@ -60,12 +64,12 @@ rule inparanoid:
 
 rule inparanoid_postprocessing:
     input:
-        "results/inparanoid/SQLtable.{pair}"
+        "results/inparanoid/{set}/SQLtable.{pair}"
     output:
-        "results/inparanoid/SQLtable.{pair}.orthotype.csv"
+        "results/inparanoid/{set}/SQLtable.{pair}.orthotype.csv"
     shell:
         """
-        python workflow/scripts/postprocess_inparanoid_output.py {input} {output}
+        env/bin/python3.12 workflow/scripts/postprocess_inparanoid_output.py {input} {output}
         """
 
 

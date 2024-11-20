@@ -1,20 +1,24 @@
 samples:
   inparanoid:
     set1:
-      Aproteins: "input/inparanoid/set1/mosquito.fasta"
-      Bproteins: "input/inparanoid/set1/fly.fasta"
-#    set2:
-#      Aproteins: "input/inparanoid/set2/mosquito.fasta"
-#      Bproteins: "input/inparanoid/set2/human.fasta"
-#    set3:
-#      Aproteins: "input/inparanoid/set3/mosquito.fasta"
-#      Bproteins: "input/inparanoid/set3/mouse.fasta"
+      Aproteins: "input/inparanoid/set1/Reference_proteome_Ae_aegypti_LVP_AGWG_UP000008820_7159.fasta"
+      Bproteins: "input/inparanoid/set1/Reference_proteome_D_melanogaster_UP000000803_7227.fasta"
+      outdir: "results/inparanoid/set1/"
+    set2:
+      Aproteins: "input/inparanoid/set2/Reference_proteome_Ae_aegypti_LVP_AGWG_UP000008820_7159.fasta"
+      Bproteins: "input/inparanoid/set2/Reference_proteome_Mouse_UP000000589_10090.fasta"
+      outdir: "results/inparanoid/set2"
+    set3:
+      Aproteins: "input/inparanoid/set3/Reference_proteome_Ae_aegypti_LVP_AGWG_UP000008820_7159.fasta"
+      Bproteins: "input/inparanoid/set3/Reference_proteome_Human_uniprot_9606_reviewed_canonical_isoforms_191008.fasta"
+      outdir: "results/inparanoid/set3"
   mmseqs:
       queries:
-               - "input/mmseqs/queries/mosquito.fasta"
+               - "input/mmseqs/queries/Reference_proteome_Ae_aegypti_LVP_AGWG_UP000008820_7159.fasta"
       targets:
-               - "input/mmseqs/fly.fasta"
-               - "input/mmseqs/human.fasta"
-               - "input/mmseqs/mouse.fasta"
+               - "input/mmseqs/targets/Reference_proteome_Mouse_UP000000589_10090.fasta"
+               - "input/mmseqs/targets/Reference_proteome_Human_uniprot_9606_reviewed_canonical_isoforms_191008.fasta"
+               - "input/mmseqs/targets/Reference_proteome_D_melanogaster_UP000000803_7227.fasta"
 mmseqs:
   evalue: 10
+
