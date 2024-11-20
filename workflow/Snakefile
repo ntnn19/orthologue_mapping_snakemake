@@ -4,41 +4,53 @@ configfile: "config.yaml"
 
 input_sets = config.keys()
 print(input_sets)
-As= [config[k][0]["Aproteins"] for k in config if k not in ["mmseqs","inparanoid"]]
-Bs= [config[k][1]["Bproteins"] for k in config if k not in ["mmseqs","inparanoid"]]
+As= [config['samples']['inparanoid'][k]["Aproteins"] for k in config['samples']['inparanoid']]
+Bs= [config['samples']['inparanoid'][k]["Bproteins"] for k in config['samples']['inparanoid']]
 SAMPLES = list(set([*As,*Bs]))
 print(SAMPLES)
-As= [os.path.basename(A) for A in As]
-Bs= [os.path.basename(B) for B in Bs]
+As_basenames= [os.path.basename(A) for A in As]
+Bs_basenames= [os.path.basename(B) for B in Bs]
+print(As,Bs)
+PAIRS = list(map(lambda pair: "-".join(pair),list(zip(As_basenames,Bs_basenames))))
+Q= [os.path.splitext(os.path.basename(q))[0] for q in config['samples']['mmseqs']['queries']]
+T= [os.path.splitext(os.path.basename(t))[0] for t in config['samples']['mmseqs']['targets']]
 
-print(input_sets)
+#['set1', 'set1', 'set2', 'set2', 'set3', 'set3'] ['mosquito', 'fly', 'human', 'mosquito', 'mouse', 'mosquito']
+
+#exit()
 rule all:
     input:
-        expand("results/mmseqs_easy_rbh/{set}_comparison.orthotype.txt", set=input_sets),
-        expand("results/inparanoid/SQLtable.{pair}.orthotype.csv",pair=list(map(lambda pair: "-".join(pair),list(combinations(sorted(list(set([*As,*Bs]))), 2)))))
+        expand("results/mmseqs_easy_rbh/{query}_{target}.orthotype.txt", query=Q,target=T),
+        expand("results/inparanoid/SQLtable.{pair}.orthotype.csv",pair=PAIRS)
 
 rule mmseqs_easy_rbh:
     input:
-        Aproteins=lambda wildcards: config[wildcards.set][0]["Aproteins"],
-        Bproteins=lambda wildcards: config[wildcards.set][1]["Bproteins"]
+        Aproteins='input/mmseqs/queries/{query}.fasta',
+        Bproteins='input/mmseqs/targets/{target}.fasta'
     params:
         e = config["mmseqs"]["evalue"]
     output:
-        "results/mmseqs_easy_rbh/{set}_comparison.txt"
+        "results/mmseqs_easy_rbh/{query}_{target}.txt"
     container:
         "https://depot.galaxyproject.org/singularity/mmseqs2:15.6f452--pl5321h6a68c12_3"
     shell:
         """
         mmseqs easy-rbh {input.Aproteins} {input.Bproteins} {output} tmp -e {params.e}  --format-output query,target,fident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,qcov,tcov
-        #mmseqs easy-rbh {input.Aproteins} {input.Bproteins} {output} tmp -e {params.e} --format-mode 4
-        
+        """
+
+rule mmseqs_postprocessing:
+    input:
+        "results/mmseqs_easy_rbh/{query}_{target}.txt"
+    output:
+        "results/mmseqs_easy_rbh/{query}_{target}.orthotype.txt"
+    shell:
+        """
+        python workflow/scripts/postprocess_mmseqs_output.py {input} {output}
         """
 
 rule inparanoid:
-    input:
-        SAMPLES
     output:
-        expand("results/inparanoid/SQLtable.{pair}.fasta",pair=list(map(lambda pair: "-".join(pair),list(combinations(sorted(list(set([*As,*Bs]))), 2)))))
+        expand("results/inparanoid/SQLtable.{pair}",pair=PAIRS)
     container:
         "docker://sonnhammer/inparanoid:singularity"
     shell:
@@ -48,23 +60,14 @@ rule inparanoid:
 
 rule inparanoid_postprocessing:
     input:
-        "results/inparanoid/SQLtable.{pair}.fasta"
+        "results/inparanoid/SQLtable.{pair}"
     output:
-        "results/inparanoid/SQLtable.{pair}.fasta.orthotype.csv"
+        "results/inparanoid/SQLtable.{pair}.orthotype.csv"
     shell:
         """
         python workflow/scripts/postprocess_inparanoid_output.py {input} {output}
         """
 
-rule mmseqs_postprocessing:
-    input:
-        "results/mmseqs_easy_rbh/{set}_comparison.txt"
-    output:
-        "results/mmseqs_easy_rbh/{set}_comparison.orthotype.txt"
-    shell:
-        """
-        python workflow/scripts/postprocess_mmseqs_output.py {input} {output}
-        """
 
 
 

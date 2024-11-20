@@ -1,8 +1,20 @@
-set1:
-  - Aproteins: "input/mosquito.fasta"
-  - Bproteins: "input/fly.fasta"
-set2:
-  - Aproteins: "input/mosquito.fasta"
-  - Bproteins: "input/human.fasta"
+samples:
+  inparanoid:
+    set1:
+      Aproteins: "input/inparanoid/set1/mosquito.fasta"
+      Bproteins: "input/inparanoid/set1/fly.fasta"
+#    set2:
+#      Aproteins: "input/inparanoid/set2/mosquito.fasta"
+#      Bproteins: "input/inparanoid/set2/human.fasta"
+#    set3:
+#      Aproteins: "input/inparanoid/set3/mosquito.fasta"
+#      Bproteins: "input/inparanoid/set3/mouse.fasta"
+  mmseqs:
+      queries:
+               - "input/mmseqs/queries/mosquito.fasta"
+      targets:
+               - "input/mmseqs/fly.fasta"
+               - "input/mmseqs/human.fasta"
+               - "input/mmseqs/mouse.fasta"
 mmseqs:
   evalue: 10
