@@ -57,14 +57,17 @@ def main(inparanoid_output,output):
     many_to_many_rows = inparanoid_df_piv[~inparanoid_df_piv.isin(t.to_dict('list')).all(axis=1)]
     final_df = pd.concat([t,many_to_many_rows])
     final_df['orthotype'] = final_df['orthotype'].fillna("n:m")
+    final_df['uniprot_id_1'] = final_df.id1.str.split("|").str[1]
+    final_df['uniprot_id_2'] = final_df.id2.str.split("|").str[1]
+    final_df['species_1'] = final_df.id1.str.split("_").str[-1]
+    final_df['species_2'] = final_df.id2.str.split("_").str[-1]
+
     print(final_df['orthotype'].value_counts())
         # final_df =
     # if not os.path.exists(out):
     final_df.to_csv(output,index=False)
 
 
-    print(final_df
-          ['orthotype'].value_counts())
     return final_df
 
 

@@ -25,8 +25,9 @@ print(Q,T)
 rule all:
     input:
         expand("results/mmseqs_easy_rbh/{query}-{target}.orthotype.txt", query=Q,target=T),
-        expand("results/inparanoid/{set}/SQLtable.{pair}.orthotype.csv",zip,pair=PAIRS,set=SETS)
+        expand("results/inparanoid/{set}/orthotype.SQLtable.{pair}.csv",zip,set=SETS,pair=PAIRS),
 
+        
 rule mmseqs_easy_rbh:
     input:
         Aproteins='input/mmseqs/queries/{query}.fasta',
@@ -56,8 +57,7 @@ rule inparanoid:
     input:
         SAMPLES
     output:
-        "results/inparanoid/{set}/SQLtable.{pair}.tsv"
-#        expand("results/inparanoid/{set}/SQLtable.{pair}",zip,pair=PAIRS,set=SETS)
+        temp("results/inparanoid/{set}/SQLtable.{pair}")
     container:
         "docker://sonnhammer/inparanoid:singularity"
     shell:
@@ -67,14 +67,17 @@ rule inparanoid:
 
 rule inparanoid_postprocessing:
     input:
-        "results/inparanoid/{set}/SQLtable.{pair}.tsv"
+        "results/inparanoid/{set}/SQLtable.{pair}"
     output:
-        "results/inparanoid/{set}/SQLtable.{pair}.orthotype.csv"
+        "results/inparanoid/{set}/orthotype.SQLtable.{pair}.csv"
     shell:
         """
-        env/bin/python3.12 workflow/scripts/postprocess_inparanoid_output.py {input} {output}
+        python workflow/scripts/postprocess_inparanoid_output.py {input} {output}
         """
 
+        
 
 
 
+
+	

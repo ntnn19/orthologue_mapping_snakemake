@@ -41,6 +41,7 @@ def main(mmseqs_output,output):
 
     print(final_df
           ['orthotype'].value_counts())
+
     return final_df
 
 
