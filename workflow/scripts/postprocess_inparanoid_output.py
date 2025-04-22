@@ -5,12 +5,10 @@ import click
 def main(inparanoid_output,output):
     inparanoid_df=pd.read_csv(inparanoid_output,header=None ,sep="\t")
     inparanoid_df.columns = ['group', 'bitscore','source','iInparalog_score','id']
-    print(inparanoid_df)       
     inparanoid_df_piv = inparanoid_df.reset_index().pivot(index=['index'],columns='source',values=['bitscore','iInparalog_score','id','group'])
 #    inparanoid_df_piv = inparanoid_df.reset_index().pivot(index='group',columns='source',values=['bitscore','iInparalog_score','id','group'])
 
 #    inparanoid_df_piv = inparanoid_df.pivot(columns='source')
-    print(inparanoid_df_piv)
     bitscore = inparanoid_df_piv['bitscore'].bfill(axis=1).infer_objects(copy=False).iloc[:, 0]
     bitscore.name = "bitscore"
 
@@ -62,7 +60,6 @@ def main(inparanoid_output,output):
     final_df['species_1'] = final_df.id1.str.split("_").str[-1]
     final_df['species_2'] = final_df.id2.str.split("_").str[-1]
 
-    print(final_df['orthotype'].value_counts())
         # final_df =
     # if not os.path.exists(out):
     final_df.to_csv(output,index=False)

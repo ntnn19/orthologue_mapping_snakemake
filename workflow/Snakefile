@@ -3,25 +3,16 @@ from itertools import combinations
 configfile: "config.yaml"
 
 input_sets = config.keys()
-print(input_sets)
 As= [config['samples']['inparanoid'][k]["Aproteins"] for k in config['samples']['inparanoid']]
 Bs= [config['samples']['inparanoid'][k]["Bproteins"] for k in config['samples']['inparanoid']]
 SAMPLES = list(set([*As,*Bs]))
-print(SAMPLES)
 As_basenames= [os.path.basename(A) for A in As]
 Bs_basenames= [os.path.basename(B) for B in Bs]
-print(As,Bs)
 PAIRS = list(map(lambda pair: "-".join(pair),list(zip(As_basenames,Bs_basenames))))
 Q= [os.path.splitext(os.path.basename(q))[0] for q in config['samples']['mmseqs']['queries']]
 T= [os.path.splitext(os.path.basename(t))[0] for t in config['samples']['mmseqs']['targets']]
 SETS=[k for k in config['samples']['inparanoid']]
-print(PAIRS,SETS)
 
-print(Q,T)
-#['set1', 'set1', 'set2', 'set2', 'set3', 'set3'] ['mosquito', 'fly', 'human', 'mosquito', 'mouse', 'mosquito']
-#['Reference_proteome_Ae_aegypti_LVP_AGWG_UP000008820_7159'] ['Reference_proteome_Mouse_UP000000589_10090', 'Reference_proteome_Human_uniprot_9606_reviewed_canonical_isoforms_191008', 'Reference_proteome_D_melanogaster_UP000000803_7227']
-
-#exit()
 rule all:
     input:
         expand("results/mmseqs_easy_rbh/{query}-{target}.orthotype.txt", query=Q,target=T),

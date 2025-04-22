@@ -39,9 +39,6 @@ def main(mmseqs_output,output):
     final_df.to_csv(output,index=False)
 
 
-    print(final_df
-          ['orthotype'].value_counts())
-
     return final_df
 
 
