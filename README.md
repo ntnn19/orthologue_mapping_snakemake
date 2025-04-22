@@ -1,4 +1,5 @@
 # Orthologue mapping workflow
+![Rulegraph](dag.png)
 
 This repository contains a Snakemake-based workflow for inferring orthologous protein pairs using MMseqs2 (`easy-rbh`) and InParanoid, along with postprocessing steps to classify orthologues by relationship type (1:1, 1:m, n:1, n:m) and identify high-confidence candidates unique to MMseqs2.
 
