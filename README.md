@@ -43,7 +43,7 @@ Navigate to the repository (if you're not already there), then create and initia
 
 ```bash
 cd orthologue_mapping_snakemake
-micromamba env create -p $PWD/venv -f env.yml
+micromamba env create -p $PWD/venv -f environment.yml
 ```
 
 ---
