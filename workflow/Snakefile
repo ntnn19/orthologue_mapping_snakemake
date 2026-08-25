@@ -1,32 +1,37 @@
 import os
 from itertools import combinations
+import shutil
 configfile: "config.yaml"
 
 input_sets = config.keys()
-As= [config['samples']['inparanoid'][k]["Aproteins"] for k in config['samples']['inparanoid']]
-Bs= [config['samples']['inparanoid'][k]["Bproteins"] for k in config['samples']['inparanoid']]
+As= [config['samples']['inparanoid'][config["set"]]["Aproteins"]]
+Bs= [config['samples']['inparanoid'][config["set"]]["Bproteins"]]
 SAMPLES = list(set([*As,*Bs]))
 As_basenames= [os.path.basename(A) for A in As]
 Bs_basenames= [os.path.basename(B) for B in Bs]
 PAIRS = list(map(lambda pair: "-".join(pair),list(zip(As_basenames,Bs_basenames))))
 Q= [os.path.splitext(os.path.basename(q))[0] for q in config['samples']['mmseqs']['queries']]
 T= [os.path.splitext(os.path.basename(t))[0] for t in config['samples']['mmseqs']['targets']]
-SETS=[k for k in config['samples']['inparanoid']]
+SETS=[config["set"]]
+shutil.copy("input/mmseqs/Reference_proteome_Ae_aegypti_LVP_AGWG_UP000008820_7159.fasta", "input/mmseqs/queries/Reference_proteome_Ae_aegypti_LVP_AGWG_UP000008820_7159.fasta")
+shutil.copy("input/mmseqs/Reference_proteome_D_melanogaster_UP000000803_7227.fasta", "input/mmseqs/targets/Reference_proteome_D_melanogaster_UP000000803_7227.fasta")
+shutil.copy("input/mmseqs/Reference_proteome_Human_uniprot_9606_reviewed_canonical_isoforms_191008.fasta", "input/mmseqs/targets/Reference_proteome_Human_uniprot_9606_reviewed_canonical_isoforms_191008.fasta")
+shutil.copy("input/mmseqs/Reference_proteome_Mouse_UP000000589_10090.fasta", "input/mmseqs/targets/Reference_proteome_Mouse_UP000000589_10090.fasta")
 
 rule all:
     input:
-        expand("results/mmseqs_easy_rbh/{query}-{target}.orthotype.txt", query=Q,target=T),
-        expand("results/inparanoid/{set}/orthotype.SQLtable.{pair}.csv",zip,set=SETS,pair=PAIRS),
+        expand("results_/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt",zip,set=SETS,pair=PAIRS)
+
 
         
 rule mmseqs_easy_rbh:
     input:
-        Aproteins='input/mmseqs/queries/{query}.fasta',
-        Bproteins='input/mmseqs/targets/{target}.fasta'
+        Aproteins=lambda wildcards: f"input/mmseqs/queries/{wildcards.pair.split('-')[0].replace('.fasta', '').replace('.orthotype', '')}.fasta",
+        Bproteins=lambda wildcards: f"input/mmseqs/targets/{wildcards.pair.split('-')[1].replace('.fasta', '').replace('.orthotype', '')}.fasta"
     params:
         e = config["mmseqs"]["evalue"]
     output:
-        "results/mmseqs_easy_rbh/{query}-{target}.txt"
+        "results_/mmseqs_easy_rbh/{pair}.txt"
     container:
         "https://depot.galaxyproject.org/singularity/mmseqs2:15.6f452--pl5321h6a68c12_3"
     shell:
@@ -36,9 +41,9 @@ rule mmseqs_easy_rbh:
 
 rule mmseqs_postprocessing:
     input:
-        "results/mmseqs_easy_rbh/{query}-{target}.txt"
+        lambda wildcards: f"results_/mmseqs_easy_rbh/{wildcards.pair.replace('.fasta', '').replace('.orthotype', '')}.txt"
     output:
-        "results/mmseqs_easy_rbh/{query}-{target}.orthotype.txt"
+        "results_/mmseqs_postprocessing/{pair}.orthotype.txt"
     shell:
         """
         python workflow/scripts/postprocess_mmseqs_output.py {input} {output}
@@ -47,8 +52,9 @@ rule mmseqs_postprocessing:
 rule inparanoid:
     input:
         SAMPLES
+        #lambda wildcards: [s for s in SAMPLES if os.path.basename(s).split('.')[0] in (wildcards.pair)     and f"/{wildcards.set}/" in s]
     output:
-        temp("results/inparanoid/{set}/SQLtable.{pair}")
+        "results_/inparanoid/{set}/SQLtable.{pair}"
     container:
         "docker://sonnhammer/inparanoid:singularity"
     shell:
@@ -58,15 +64,24 @@ rule inparanoid:
 
 rule inparanoid_postprocessing:
     input:
-        "results/inparanoid/{set}/SQLtable.{pair}"
+        "results_/inparanoid/{set}/SQLtable.{pair}"
     output:
-        "results/inparanoid/{set}/orthotype.SQLtable.{pair}.csv"
+        "results_/inparanoid_postprocessing/{set}/orthotype.SQLtable.{pair}.csv"
     shell:
         """
         python workflow/scripts/postprocess_inparanoid_output.py {input} {output}
         """
 
-        
+rule get_mmseqs_not_in_inparanoid:
+    input:
+        inparanoid = "results_/inparanoid_postprocessing/{set}/orthotype.SQLtable.{pair}.csv",
+        mmseqs = lambda wildcards: f"results_/mmseqs_postprocessing/{wildcards.pair.replace('.fasta', '').replace('.orthotype', '')}.orthotype.txt"
+    output:
+        "results_/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt"
+    shell:
+        """
+        python workflow/scripts/get_mmseqs_not_in_inparanoid.py {input.inparanoid} {input.mmseqs} --output {output}
+        """
 
 
 
