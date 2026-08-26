@@ -19,7 +19,7 @@ shutil.copy("config/input/mmseqs/Reference_proteome_Mouse_UP000000589_10090.fast
 
 rule all:
     input:
-        expand("results_/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt",zip,set=SETS,pair=PAIRS)
+        expand("results/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt",zip,set=SETS,pair=PAIRS)
 
 
 
@@ -30,7 +30,7 @@ rule mmseqs_easy_rbh:
     params:
         e = config["mmseqs"]["evalue"]
     output:
-        "results_/mmseqs_easy_rbh/{pair}.txt"
+        "results/mmseqs_easy_rbh/{pair}.txt"
     container:
         "https://depot.galaxyproject.org/singularity/mmseqs2:15.6f452--pl5321h6a68c12_3"
     shell:
@@ -40,9 +40,9 @@ rule mmseqs_easy_rbh:
 
 rule mmseqs_postprocessing:
     input:
-        lambda wildcards: f"results_/mmseqs_easy_rbh/{wildcards.pair.replace('.fasta', '').replace('.orthotype', '')}.txt"
+        lambda wildcards: f"results/mmseqs_easy_rbh/{wildcards.pair.replace('.fasta', '').replace('.orthotype', '')}.txt"
     output:
-        "results_/mmseqs_postprocessing/{pair}.orthotype.txt"
+        "results/mmseqs_postprocessing/{pair}.orthotype.txt"
     params:
         _helper = workflow.source_path("../scripts/postprocess_mmseqs_output.py")
     shell:
@@ -54,7 +54,7 @@ rule inparanoid:
     input:
         SAMPLES
     output:
-        "results_/inparanoid/{set}/SQLtable.{pair}"
+        "results/inparanoid/{set}/SQLtable.{pair}"
     container:
         "docker://sonnhammer/inparanoid:singularity"
     shell:
@@ -64,9 +64,9 @@ rule inparanoid:
 
 rule inparanoid_postprocessing:
     input:
-        "results_/inparanoid/{set}/SQLtable.{pair}"
+        "results/inparanoid/{set}/SQLtable.{pair}"
     output:
-        "results_/inparanoid_postprocessing/{set}/orthotype.SQLtable.{pair}.csv"
+        "results/inparanoid_postprocessing/{set}/orthotype.SQLtable.{pair}.csv"
     params:
         _helper = workflow.source_path("../scripts/postprocess_inparanoid_output.py")
     shell:
@@ -76,10 +76,10 @@ rule inparanoid_postprocessing:
 
 rule get_mmseqs_not_in_inparanoid:
     input:
-        inparanoid = "results_/inparanoid_postprocessing/{set}/orthotype.SQLtable.{pair}.csv",
-        mmseqs = lambda wildcards: f"results_/mmseqs_postprocessing/{wildcards.pair.replace('.fasta', '').replace('.orthotype', '')}.orthotype.txt"
+        inparanoid = "results/inparanoid_postprocessing/{set}/orthotype.SQLtable.{pair}.csv",
+        mmseqs = lambda wildcards: f"results/mmseqs_postprocessing/{wildcards.pair.replace('.fasta', '').replace('.orthotype', '')}.orthotype.txt"
     output:
-        "results_/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt"
+        "results/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt"
     params:
         _helper = workflow.source_path("../scripts/get_mmseqs_not_in_inparanoid.py")
     shell:
