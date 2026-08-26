@@ -19,7 +19,8 @@ shutil.copy("config/input/mmseqs/Reference_proteome_Mouse_UP000000589_10090.fast
 
 rule all:
     input:
-        expand("results/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt",zip,set=SETS,pair=PAIRS)
+        [*list(expand("results/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt",zip,set=SETS,pair=PAIRS)),
+        *list(expand("results/inparanoid_postprocessing/{set}/orthotype.SQLtable.{pair}.csv",zip,set=SETS,pair=PAIRS))]
 
 
 
