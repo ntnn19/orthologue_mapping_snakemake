@@ -45,7 +45,7 @@ rule mmseqs_postprocessing:
     output:
         "results/mmseqs_postprocessing/{pair}.orthotype.txt"
     params:
-        _helper = workflow.source_path("../scripts/postprocess_mmseqs_output.py")
+        _helper = workflow.source_path("scripts/postprocess_mmseqs_output.py")
     shell:
         """
         python {params._helper} {input} {output}
@@ -69,7 +69,7 @@ rule inparanoid_postprocessing:
     output:
         "results/inparanoid_postprocessing/{set}/orthotype.SQLtable.{pair}.csv"
     params:
-        _helper = workflow.source_path("../scripts/postprocess_inparanoid_output.py")
+        _helper = workflow.source_path("scripts/postprocess_inparanoid_output.py")
     shell:
         """
         python {params._helper} {input} {output}
@@ -82,7 +82,7 @@ rule get_mmseqs_not_in_inparanoid:
     output:
         "results/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt"
     params:
-        _helper = workflow.source_path("../scripts/get_mmseqs_not_in_inparanoid.py")
+        _helper = workflow.source_path("scripts/get_mmseqs_not_in_inparanoid.py")
     shell:
         """
         python {params._helper} {input.inparanoid} {input.mmseqs} --output {output}
