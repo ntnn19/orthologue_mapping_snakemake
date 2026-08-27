@@ -75,5 +75,4 @@ if __name__ == '__main__':
     import os
     import pandas as pd
     from pathlib import Path
-    import pdb
     main()
