@@ -45,7 +45,7 @@ rule mmseqs_postprocessing:
     output:
         "results_/mmseqs_postprocessing/{pair}.orthotype.txt"
     conda:
-        workflow.source_path("envs/env.yaml")
+        "envs/env.yaml"
     params:
         _helper = workflow.source_path("scripts/postprocess_mmseqs_output.py")
     shell:
@@ -73,7 +73,7 @@ rule inparanoid_postprocessing:
     params:
         _helper = workflow.source_path("scripts/postprocess_inparanoid_output.py")
     conda:
-        workflow.source_path("envs/env.yaml")
+        "envs/env.yaml"
     shell:
         """
         python {params._helper} {input} {output}
@@ -88,7 +88,7 @@ rule get_mmseqs_not_in_inparanoid:
     params:
         _helper = workflow.source_path("scripts/get_mmseqs_not_in_inparanoid.py")
     conda:
-        workflow.source_path("envs/env.yaml")
+        "envs/env.yaml"
     shell:
         """
         python {params._helper} {input.inparanoid} {input.mmseqs} --output {output}
