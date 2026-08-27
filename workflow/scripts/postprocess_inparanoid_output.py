@@ -6,9 +6,7 @@ def main(inparanoid_output,output):
     inparanoid_df=pd.read_csv(inparanoid_output,header=None ,sep="\t")
     inparanoid_df.columns = ['group', 'bitscore','source','iInparalog_score','id']
     inparanoid_df_piv = inparanoid_df.reset_index().pivot(index=['index'],columns='source',values=['bitscore','iInparalog_score','id','group'])
-#    inparanoid_df_piv = inparanoid_df.reset_index().pivot(index='group',columns='source',values=['bitscore','iInparalog_score','id','group'])
 
-#    inparanoid_df_piv = inparanoid_df.pivot(columns='source')
     bitscore = inparanoid_df_piv['bitscore'].bfill(axis=1).infer_objects(copy=False).iloc[:, 0]
     bitscore.name = "bitscore"
 
