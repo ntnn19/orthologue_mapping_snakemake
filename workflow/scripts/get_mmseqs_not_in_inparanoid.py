@@ -11,9 +11,6 @@ def main(inparanoid_output,mmseqs_output,output):
     mmseqs_unique = mmseqs_df[~(mmseqs_df[['query','target']].isin(inparanoid_df[['uniprot_id_1','uniprot_id_2']].values.flatten().tolist()))][['query','target']]
     filtered_mmseqs_df = mmseqs_df.loc[mmseqs_unique.dropna().index]
     filtered_mmseqs_df.to_csv(output,index=False)
-#
-#
-#    return final_df
 
 
 
