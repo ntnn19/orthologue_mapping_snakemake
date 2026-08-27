@@ -26,8 +26,8 @@ rule all:
 
 rule mmseqs_easy_rbh:
     input:
-        Aproteins=lambda wildcards: f"input/mmseqs/queries/{wildcards.pair.split('-')[0].replace('.fasta', '').replace('.orthotype', '')}.fasta",
-        Bproteins=lambda wildcards: f"input/mmseqs/targets/{wildcards.pair.split('-')[1].replace('.fasta', '').replace('.orthotype', '')}.fasta"
+        Aproteins=lambda wildcards: f"config/input/mmseqs/queries/{wildcards.pair.split('-')[0].replace('.fasta', '').replace('.orthotype', '')}.fasta",
+        Bproteins=lambda wildcards: f"config/input/mmseqs/targets/{wildcards.pair.split('-')[1].replace('.fasta', '').replace('.orthotype', '')}.fasta"
     params:
         e = config["mmseqs"]["evalue"]
     output:
