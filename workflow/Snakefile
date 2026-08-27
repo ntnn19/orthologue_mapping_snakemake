@@ -19,8 +19,8 @@ shutil.copy("config/input/mmseqs/Reference_proteome_Mouse_UP000000589_10090.fast
 
 rule all:
     input:
-        [*list(expand("results/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt",zip,set=SETS,pair=PAIRS)),
-        *list(expand("results/inparanoid_postprocessing/{set}/orthotype.SQLtable.{pair}.csv",zip,set=SETS,pair=PAIRS))]
+        "results/combine_mmseqs_and_inparanoid/mmseqs_inparanoid_one2one.csv",
+        
 
 
 
@@ -86,4 +86,20 @@ rule get_mmseqs_not_in_inparanoid:
     shell:
         """
         python {params._helper} {input.inparanoid} {input.mmseqs} --output {output}
+        """
+
+rule combine_mmseqs_and_inparanoid:
+    input:
+        [*list(expand("results/get_mmseqs_not_in_inparanoid/{set}/{pair}_mmseqs_not_in_inparanoid.orthotype.txt",zip,set=SETS,pair=PAIRS)),
+        *list(expand("results/inparanoid_postprocessing/{set}/orthotype.SQLtable.{pair}.csv",zip,set=SETS,pair=PAIRS))]
+    output:
+        "results/combine_mmseqs_and_inparanoid/mmseqs_inparanoid_one2one.csv"
+    shell:
+        """
+        read -r mmseqs_output inparanoid_output <<< {input}
+        grep "1\\:1" $mmseqs_output | cut -d"," -f1,2 > tmp1
+        grep "1\\:1" $inparanoid_output | cut -d"," -f7,8 > tmp2
+        echo "uniprot_id_Aedes_aegypti,uniprot_id_Drosophila_melanogaster" > {output}
+        cat tmp1 tmp2 >> {output}
+        rm tmp1 tmp2
         """
