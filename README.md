@@ -71,4 +71,4 @@ Please open an issue or contact [ntnn19](https://github.com/ntnn19) for support.
 ## References
 > Köster, J., Mölder, F., Jablonski, K. P., et al. Sustainable data analysis with Snakemake. F1000Research, 10:33, 2021.
 
-> Flory, C., Virdi, S., Schie, M., Pfister, S., Conze, C., Thünauer, R., ... & Scaturro, P. (2026). Multiomics Analysis of Arboviral Capsid Targets in Mosquitoes Reveals a Proviral Function of the Chromatin-Remodeling Brahma Complex. Molecular & Cellular Proteomics, 25(2).
+> Flory, C., Virdi, S., Schie, M., Pfister, S., Conze, C., Thünauer, R., ... & Scaturro, P. Multiomics Analysis of Arboviral Capsid Targets in Mosquitoes Reveals a Proviral Function of the Chromatin-Remodeling Brahma Complex. Molecular & Cellular Proteomics, 25(2):, 2026.
