@@ -35,7 +35,7 @@ micromamba activate snakemake
 
 ### 3. Deploy the workflow
 ```bash
-snakedeploy deploy-workflow https://github.com/ntnn19/mosquito_proteome_atlas . --branch main
+snakedeploy deploy-workflow https://github.com/ntnn19/orthologue_mapping_snakemake . --tag v1.0.1
 ```
 
 ### 4. Run the workflow
