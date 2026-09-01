@@ -55,7 +55,7 @@ The workflow produces:
 - Raw and filtered orthologue predictions from MMseqs2 and InParanoid
 - Orthotype-labeled results
 - A list of MMseqs2-specific orthologues not found in InParanoid
-- A combined list of orthologues found only in MMseqs2 or InParanoid
+- A combined list of 1:1 orthologues found only in MMseqs2 or InParanoid
 
 ---
 
